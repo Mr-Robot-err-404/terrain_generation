@@ -3,7 +3,7 @@ package main
 import rl "vendor:raylib"
 
 Height: f32 = 36
-Width: f32 = 100
+Width: f32 = 200
 Length: f32 = 100
 Speed: f32 = 20
 
@@ -14,6 +14,8 @@ GameState :: struct {
 	mouse:  [2]f32,
 	dir:    [2]f32,
 }
+Center: [3]f32 = {0, 0, 0}
+Start: [3]f32 = {170, 110, 70}
 
 get_direction :: proc(pressed: PressedFn) -> [2]f32 {
 	direction := [2]f32{}
@@ -62,13 +64,14 @@ main :: proc() {
 	defer rl.CloseWindow()
 
 	camera := rl.Camera3D {
-		position   = {-10, 50, 150},
+		position   = Start,
 		target     = {0, 0, 0},
 		up         = {0, 1, 0},
 		fovy       = 45,
 		projection = .PERSPECTIVE,
 	}
 	rl.SetTargetFPS(120)
+	rl.DisableCursor()
 	rl.SetMousePosition(1920 / 2, 1080 / 2)
 
 	mesh := rl.LoadModel("apple.glb")
@@ -85,10 +88,17 @@ main :: proc() {
 		defer rl.EndDrawing()
 
 		rl.BeginMode3D(camera)
-		rl.DrawModel(mesh, {0, 0, 0}, 100, rl.Color{180, 50, 220, 255})
-		rl.EndMode3D()
+		rl.DrawModel(mesh, {0, 10, 0}, 100, rl.Color{180, 50, 220, 255})
+		rl.DrawPlane(Center, {Width, Length}, Surface)
 
-		rl.DrawRectangle(5, 5, 500, 250, Overlay)
-		draw_table(&camera, 6)
+		// walls
+		rl.DrawCube({Width / 2, Height / 2, 0}, 1, Height, Length, Dragonblue)
+		rl.DrawCube({(Width / 2) * -1, Height / 2, 0}, 1, Height, Length, Dragonblue)
+		rl.DrawCube({0, Height / 2, Length / 2}, Width, Height, 1, Samuraired)
+		rl.DrawCube({0, Height / 2, (Length / 2) * -1}, Width, Height, 1, Samuraired)
+
+		rl.EndMode3D()
+		rl.DrawRectangle(5, 5, 450, 200, Overlay)
+		draw_hud(&camera, 6)
 	}
 }

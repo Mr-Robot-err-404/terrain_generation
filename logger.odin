@@ -59,7 +59,7 @@ log_game_state :: proc(logger: ^Logger, state: GameState) {
 	log(logger, strings.to_string(b))
 }
 
-draw_table :: proc(cam: ^rl.Camera3D, y: i32) {
+draw_hud :: proc(cam: ^rl.Camera3D, y: i32) {
 	col0: i32 = 15
 	col1: i32 = 100
 	col2: i32 = 220
