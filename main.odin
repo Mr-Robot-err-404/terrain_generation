@@ -15,7 +15,7 @@ GameState :: struct {
 	dir:    [2]f32,
 }
 Center: [3]f32 = {0, 0, 0}
-Start: [3]f32 = {170, 110, 70}
+Start: [3]f32 = {0, 170, 20}
 
 get_direction :: proc(pressed: PressedFn) -> [2]f32 {
 	direction := [2]f32{}
@@ -57,8 +57,9 @@ rotate :: proc(l: ^Logger, camera: ^rl.Camera3D, v2: [2]f32) {
 }
 
 main :: proc() {
-	l := log_init(false)
+	l := log_init(true)
 
+	rl.SetTraceLogLevel(.ALL)
 	rl.SetConfigFlags({.FULLSCREEN_MODE})
 	rl.InitWindow(1920, 1080, "terrain generation")
 	defer rl.CloseWindow()
@@ -74,7 +75,15 @@ main :: proc() {
 	rl.DisableCursor()
 	rl.SetMousePosition(1920 / 2, 1080 / 2)
 
-	mesh := rl.LoadModel("apple.glb")
+	grid := Grid{}
+	mesh := rl.Mesh{}
+	sphere := rl.GenMeshSphere(0.5, 8, 8)
+
+	material := rl.LoadMaterialDefault()
+	material.maps[rl.MaterialMapIndex.ALBEDO].color = Oniviolet
+
+	populate_grid(&grid)
+	create_mesh(&mesh, &sphere, &grid)
 
 	for !rl.WindowShouldClose() && !rl.IsKeyPressed(.ESCAPE) {
 		mouse := rl.GetMouseDelta()
@@ -83,15 +92,14 @@ main :: proc() {
 		}
 		move(&l, &camera, rl.IsKeyDown, rl.GetFrameTime())
 
-		rl.ClearBackground(World)
 		rl.BeginDrawing()
 		defer rl.EndDrawing()
+		rl.ClearBackground(World)
 
 		rl.BeginMode3D(camera)
-		rl.DrawModel(mesh, {0, 10, 0}, 100, rl.Color{180, 50, 220, 255})
 		rl.DrawPlane(Center, {Width, Length}, Surface)
+		rl.DrawMesh(mesh, material, rl.Matrix(1))
 
-		// walls
 		rl.DrawCube({Width / 2, Height / 2, 0}, 1, Height, Length, Dragonblue)
 		rl.DrawCube({(Width / 2) * -1, Height / 2, 0}, 1, Height, Length, Dragonblue)
 		rl.DrawCube({0, Height / 2, Length / 2}, Width, Height, 1, Samuraired)

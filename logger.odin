@@ -80,6 +80,17 @@ draw_hud :: proc(cam: ^rl.Camera3D, y: i32) {
 	rl.DrawText(rl.TextFormat("% 8.2f", cam.target.z), col3, y + 60, 20, Text)
 }
 
+log_mesh :: proc(logger: ^Logger, mesh: rl.Mesh) {
+	log(logger, fmt.tprintf("vaoId=%d vertexCount=%d triangleCount=%d", mesh.vaoId, mesh.vertexCount, mesh.triangleCount))
+}
+
+log_matrix :: proc(logger: ^Logger, m: rl.Matrix, idx: int) {
+	log(
+		logger,
+		fmt.tprintf("[%d] translation x=%.2f y=%.2f z=%.2f", idx, m[0, 3], m[1, 3], m[2, 3]),
+	)
+}
+
 log_close :: proc(logger: ^Logger) {
 	if logger.enabled {
 		os.close(logger.handle)
