@@ -76,21 +76,24 @@ main :: proc() {
 	rl.SetMousePosition(1920 / 2, 1080 / 2)
 
 	mesh := rl.Mesh{}
-
 	material := rl.LoadMaterialDefault()
-	material.maps[rl.MaterialMapIndex.ALBEDO].color = Oniviolet
 
 	size := (Width / Spacing) * (Length / Spacing)
-	size *= 3
+	points := size * 3
+	palette := size * 4
+
 	cells := ((Width / Spacing) - 1) * ((Length / Spacing) - 1)
 	cells *= 6
 
-	vertices := make([]f32, int(size))
+	vertices := make([]f32, int(points))
+	colors := make([]u8, int(palette))
 	indices := make([]u16, int(cells))
 
-	populate_vertices(vertices)
+	populate_vertices(vertices, colors)
 	populate_indices(indices)
-	summon_terrain(&mesh, vertices, indices)
+	summon_terrain(&mesh, vertices, indices, colors)
+
+	rl.GenMeshTangents(&mesh)
 	rl.UploadMesh(&mesh, false)
 
 	for !rl.WindowShouldClose() && !rl.IsKeyPressed(.ESCAPE) {
@@ -106,11 +109,6 @@ main :: proc() {
 
 		rl.BeginMode3D(camera)
 		rl.DrawMesh(mesh, material, rl.Matrix(1))
-
-		rl.DrawCube({Width / 2, Height / 2, 0}, 1, Height, Length, Dragonblue)
-		rl.DrawCube({(Width / 2) * -1, Height / 2, 0}, 1, Height, Length, Dragonblue)
-		rl.DrawCube({0, Height / 2, Length / 2}, Width, Height, 1, Samuraired)
-		rl.DrawCube({0, Height / 2, (Length / 2) * -1}, Width, Height, 1, Samuraired)
 
 		rl.EndMode3D()
 		rl.DrawRectangle(5, 5, 450, 200, Overlay)
