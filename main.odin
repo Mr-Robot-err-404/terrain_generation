@@ -2,10 +2,11 @@ package main
 
 import rl "vendor:raylib"
 
-Height: f32 = 36
-Width: f32 = 200
-Length: f32 = 100
+Height: f32 = 100
+Width: f32 = 400
+Length: f32 = 400
 Speed: f32 = 20
+Spacing: f32 = 5
 
 PressedFn :: proc "c" (key: rl.KeyboardKey) -> bool
 

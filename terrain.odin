@@ -1,10 +1,11 @@
 package main
 
-import "core:math/rand"
+import "core:math"
 import rl "vendor:raylib"
 
 
-Spacing: f32 = 5
+Frequency: f32 = 0.2
+Amplitude: f32 = 5
 Vector3 :: struct {
 	x: f32,
 	y: f32,
@@ -15,6 +16,12 @@ Coord :: struct {
 	z: f32,
 }
 Grid :: map[Coord]bool
+
+concentric_circles :: proc(x, z: f32) -> f32 {
+	// -1..1 -> 0..2
+	n := math.sin(Frequency * math.sqrt((x * x) + (z * z))) + 1
+	return n * Amplitude
+}
 
 populate_vertices :: proc(vertices: []f32, colors: []u8) {
 	offset := Vector3 {
@@ -27,8 +34,8 @@ populate_vertices :: proc(vertices: []f32, colors: []u8) {
 	for i in 0 ..< rows {
 		for j in 0 ..< cols {
 			x := (f32(j) * Spacing) - offset.x + (Spacing / 2)
-			y := rand.float32_range(0, 20)
 			z := (f32(i) * Spacing) - offset.z + (Spacing / 2)
+			y: f32 = concentric_circles(x, z)
 
 			idx := (i * cols) + j
 			v := idx * 3
@@ -39,12 +46,13 @@ populate_vertices :: proc(vertices: []f32, colors: []u8) {
 			vertices[v + 2] = z
 
 			// RGBA
-			gradient := y / Height
+			ceiling := Amplitude * 2
+			gradient := y / ceiling
 			brightness := 255 * gradient
 
-			colors[c] = u8(brightness)
-			colors[c + 1] = 100
-			colors[c + 2] = u8(255 - brightness)
+			colors[c] = u8(101 + (brightness * 0.5))
+			colors[c + 1] = u8(67 + u32(brightness * 0.3))
+			colors[c + 2] = u8(33 + u32(brightness * 0.1))
 			colors[c + 3] = u8(255)
 		}
 	}
