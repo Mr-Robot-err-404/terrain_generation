@@ -2,6 +2,7 @@ package main
 
 import rl "vendor:raylib"
 
+Spacing: f32 = 5
 Vector3 :: struct {
 	x: f32,
 	y: f32,
@@ -13,43 +14,54 @@ Coord :: struct {
 }
 Grid :: map[Coord]bool
 
-Spacing: f32 = 5
-
-populate_grid :: proc(grid: ^Grid) {
-	start := Coord {
-		x = (Width / 2) * -1,
-		z = (Length / 2) * -1,
-	}
-	end := Coord {
+populate_vertices :: proc(vertices: []f32) {
+	offset := Vector3 {
 		x = Width / 2,
 		z = Length / 2,
 	}
-	for x := start.x; x < end.x; x += Spacing {
-		for z := start.z; z < end.z; z += Spacing {
-			coord := Coord {
-				x = x,
-				z = z,
-			}
-			grid[coord] = true
+	rows := u32(Length / Spacing)
+	cols := u32(Width / Spacing)
+
+	for i in 0 ..< rows {
+		for j in 0 ..< cols {
+			x := (f32(j) * Spacing) - offset.x + (Spacing / 2)
+			z := (f32(i) * Spacing) - offset.z + (Spacing / 2)
+
+			idx := (i * cols) + j
+			idx *= 3
+			vertices[idx] = x
+			vertices[idx + 1] = 0
+			vertices[idx + 2] = z
 		}
 	}
 }
 
-create_mesh :: proc(mesh: ^rl.Mesh, sphere: ^rl.Mesh, grid: ^Grid) {
-	total := sphere.vertexCount * i32(len(grid))
-	vertices := make([]f32, total * 3)
+populate_indices :: proc(indices: []u16) {
+	rows := u16(Length / Spacing)
+	cols := u16(Width / Spacing)
 
-	i := 0
-	for coord in grid {
-		for v := 0; v < int(sphere.vertexCount); v += 1 {
-			vertices[i * 3 + 0] = sphere.vertices[v * 3 + 0] + coord.x
-			vertices[i * 3 + 1] = sphere.vertices[v * 3 + 1] + 1
-			vertices[i * 3 + 2] = sphere.vertices[v * 3 + 2] + coord.z
-			i += 1
+	for i in 0 ..< rows - 1 {
+		for j in 0 ..< cols - 1 {
+			cell := (i * (cols - 1)) + j
+			a := (i * cols) + j
+			b := a + 1
+			c := a + cols
+			d := c + 1
+
+			idx := cell * 6
+			indices[idx] = a
+			indices[idx + 1] = c
+			indices[idx + 2] = b
+			indices[idx + 3] = b
+			indices[idx + 4] = c
+			indices[idx + 5] = d
 		}
 	}
-	mesh.vertexCount = total
-	mesh.triangleCount = sphere.triangleCount * i32(len(grid))
-	mesh.vertices = raw_data(vertices)
-	rl.UploadMesh(mesh, false)
+}
+
+summon_terrain :: proc(terrain: ^rl.Mesh, vertices: []f32, indices: []u16) {
+	terrain.vertexCount = i32(len(vertices) / 3)
+	terrain.triangleCount = i32(len(indices) / 3)
+	terrain.vertices = raw_data(vertices)
+	terrain.indices = raw_data(indices)
 }

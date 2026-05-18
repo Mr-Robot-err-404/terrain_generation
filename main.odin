@@ -75,15 +75,23 @@ main :: proc() {
 	rl.DisableCursor()
 	rl.SetMousePosition(1920 / 2, 1080 / 2)
 
-	grid := Grid{}
 	mesh := rl.Mesh{}
-	sphere := rl.GenMeshSphere(0.5, 8, 8)
 
 	material := rl.LoadMaterialDefault()
 	material.maps[rl.MaterialMapIndex.ALBEDO].color = Oniviolet
 
-	populate_grid(&grid)
-	create_mesh(&mesh, &sphere, &grid)
+	size := (Width / Spacing) * (Length / Spacing)
+	size *= 3
+	cells := ((Width / Spacing) - 1) * ((Length / Spacing) - 1)
+	cells *= 6
+
+	vertices := make([]f32, int(size))
+	indices := make([]u16, int(cells))
+
+	populate_vertices(vertices)
+	populate_indices(indices)
+	summon_terrain(&mesh, vertices, indices)
+	rl.UploadMesh(&mesh, false)
 
 	for !rl.WindowShouldClose() && !rl.IsKeyPressed(.ESCAPE) {
 		mouse := rl.GetMouseDelta()
@@ -97,7 +105,6 @@ main :: proc() {
 		rl.ClearBackground(World)
 
 		rl.BeginMode3D(camera)
-		rl.DrawPlane(Center, {Width, Length}, Surface)
 		rl.DrawMesh(mesh, material, rl.Matrix(1))
 
 		rl.DrawCube({Width / 2, Height / 2, 0}, 1, Height, Length, Dragonblue)
