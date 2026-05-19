@@ -16,7 +16,7 @@ GameState :: struct {
 	dir:    [2]f32,
 }
 Center: [3]f32 = {0, 0, 0}
-BirdsEye: [3]f32 = {0, 170, 20}
+BirdsEye: [3]f32 = {-60, 140, 270}
 CrossSection: [3]f32 = {-25, 60, 310}
 
 get_direction :: proc(pressed: PressedFn) -> [2]f32 {
@@ -67,7 +67,7 @@ main :: proc() {
 	defer rl.CloseWindow()
 
 	camera := rl.Camera3D {
-		position   = CrossSection,
+		position   = BirdsEye,
 		target     = {0, 0, 0},
 		up         = {0, 1, 0},
 		fovy       = 45,

@@ -57,31 +57,39 @@ populate_vertices :: proc(vertices: []f32) {
 }
 
 populate_colors :: proc(colors: []u8, normals: []f32) {
+	offset := Vector3 {
+		x = Width / 2,
+		z = Length / 2,
+	}
 	rows := u32(Length / Spacing)
 	cols := u32(Width / Spacing)
-	light_source := normalize(Vector3{x = 1, y = -1, z = 0})
+	light_source := normalize(Vector3{1, -1, 1})
 
 	for i in 0 ..< rows {
 		for j in 0 ..< cols {
+			x := (f32(j) * Spacing) - offset.x + (Spacing / 2)
+			z := (f32(i) * Spacing) - offset.z + (Spacing / 2)
+			y: f32 = waves(x, z)
+
 			idx := (i * cols) + j
 			c := idx * 4
 
+			height_factor := clamp(y / (Amplitude * 2), 0, 1)
 			diffuse := dot_product(vector_at_idx(u16(idx), normals), light_source)
-			brightness := clamp(diffuse, 0, 1)
+			ratio := (diffuse * 0.7) + (height_factor * 0.3)
+			brightness := clamp(diffuse, 0.1, 1)
 
-			colors[c] = u8(200 * brightness)
-			colors[c + 1] = u8(200 * brightness)
-			colors[c + 2] = u8(200 * brightness)
+			colors[c] = u8(101 * brightness)
+			colors[c + 1] = u8(67 * brightness)
+			colors[c + 2] = u8(33 * brightness)
 			colors[c + 3] = 255
 
-			// ceiling := Amplitude * 2
-			// gradient := y / ceiling
-			// brightness := 255 * gradient
-			//
-			// colors[c] = u8(brightness * 0.4)
-			// colors[c + 1] = u8(brightness * 0.2)
-			// colors[c + 2] = u8(brightness)
-			// colors[c + 3] = 255
+			// final pass to normalize again after accumulation
+			n := vector_at_idx(u16(idx), normals)
+			i := idx * 3
+			normals[i] = n.x
+			normals[i] = n.y
+			normals[i] = n.y
 		}
 	}
 
@@ -109,8 +117,8 @@ populate_indices :: proc(indices: []u16, vertices: []f32, normals: []f32) {
 summon_triangle :: proc(a, c, b: u16, vertices: []f32, indices: []u16, normals: []f32, idx: u16) {
 	n := calc_face_normal(a, c, b, vertices)
 	assign_normal(a, n, normals)
-	assign_normal(b, n, normals)
 	assign_normal(c, n, normals)
+	assign_normal(b, n, normals)
 
 	indices[idx] = a
 	indices[idx + 1] = c
