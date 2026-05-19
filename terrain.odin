@@ -4,8 +4,8 @@ import "core:math"
 import rl "vendor:raylib"
 
 
-Frequency: f32 = 0.2
-Amplitude: f32 = 5
+Frequency: f32 = 0.5
+Amplitude: f32 = 10
 Vector3 :: struct {
 	x: f32,
 	y: f32,
@@ -23,6 +23,16 @@ concentric_circles :: proc(x, z: f32) -> f32 {
 	return n * Amplitude
 }
 
+waves :: proc(x, z: f32) -> f32 {
+	x_offset := math.sin(Frequency * math.sin(x))
+	z_offset := math.sin(Frequency * math.sin(z))
+	n := x_offset + z_offset + 1
+
+	// -1..1 -> 0..2
+	n += 1
+	return n * Amplitude
+}
+
 populate_vertices :: proc(vertices: []f32, colors: []u8) {
 	offset := Vector3 {
 		x = Width / 2,
@@ -35,7 +45,7 @@ populate_vertices :: proc(vertices: []f32, colors: []u8) {
 		for j in 0 ..< cols {
 			x := (f32(j) * Spacing) - offset.x + (Spacing / 2)
 			z := (f32(i) * Spacing) - offset.z + (Spacing / 2)
-			y: f32 = concentric_circles(x, z)
+			y: f32 = waves(x, z)
 
 			idx := (i * cols) + j
 			v := idx * 3
