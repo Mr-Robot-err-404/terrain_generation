@@ -17,6 +17,13 @@ Coord :: struct {
 }
 Grid :: map[Coord]bool
 
+offset := Vector3 {
+	x = Width / 2,
+	z = Length / 2,
+}
+rows := u32(Length / Spacing)
+cols := u32(Width / Spacing)
+
 concentric_circles :: proc(x, z: f32) -> f32 {
 	// -1..1 -> 0..2
 	n := math.sin(Frequency * math.sqrt((x * x) + (z * z))) + 1
@@ -33,22 +40,20 @@ waves :: proc(x, z: f32) -> f32 {
 	return n * Amplitude
 }
 
-populate_vertices :: proc(vertices: []f32) {
-	offset := Vector3 {
-		x = Width / 2,
-		z = Length / 2,
-	}
-	rows := u32(Length / Spacing)
-	cols := u32(Width / Spacing)
+position :: proc(i, j: u32) -> (f32, f32, f32) {
+	x := (f32(j) * Spacing) - offset.x + (Spacing / 2)
+	z := (f32(i) * Spacing) - offset.z + (Spacing / 2)
+	y: f32 = waves(x, z)
+	return x, y, z
+}
 
+populate_vertices :: proc(vertices: []f32) {
 	for i in 0 ..< rows {
 		for j in 0 ..< cols {
-			x := (f32(j) * Spacing) - offset.x + (Spacing / 2)
-			z := (f32(i) * Spacing) - offset.z + (Spacing / 2)
-			y: f32 = waves(x, z)
-
+			x, y, z := position(i, j)
 			idx := (i * cols) + j
 			v := idx * 3
+
 			vertices[v] = x
 			vertices[v + 1] = y
 			vertices[v + 2] = z
@@ -57,20 +62,11 @@ populate_vertices :: proc(vertices: []f32) {
 }
 
 populate_colors :: proc(colors: []u8, normals: []f32) {
-	offset := Vector3 {
-		x = Width / 2,
-		z = Length / 2,
-	}
-	rows := u32(Length / Spacing)
-	cols := u32(Width / Spacing)
 	light_source := normalize(Vector3{1, -1, 1})
 
 	for i in 0 ..< rows {
 		for j in 0 ..< cols {
-			x := (f32(j) * Spacing) - offset.x + (Spacing / 2)
-			z := (f32(i) * Spacing) - offset.z + (Spacing / 2)
-			y: f32 = waves(x, z)
-
+			x, y, z := position(i, j)
 			idx := (i * cols) + j
 			c := idx * 4
 
