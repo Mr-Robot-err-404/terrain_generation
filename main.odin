@@ -88,12 +88,14 @@ main :: proc() {
 	cells *= 6
 
 	vertices := make([]f32, int(points))
+	normals := make([]f32, int(points))
 	colors := make([]u8, int(palette))
 	indices := make([]u16, int(cells))
 
-	populate_vertices(vertices, colors)
-	populate_indices(indices)
-	summon_terrain(&mesh, vertices, indices, colors)
+	populate_vertices(vertices)
+	populate_indices(indices, vertices, normals)
+	populate_colors(colors, normals)
+	summon_terrain(&mesh, vertices, indices, colors, normals)
 
 	rl.GenMeshTangents(&mesh)
 	rl.UploadMesh(&mesh, false)
